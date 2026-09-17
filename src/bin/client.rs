@@ -16,7 +16,7 @@ async fn main() {
     let rest: Vec<String> = args.collect();
 
     // Point this at your server. Localhost for now.
-    let url = "http://kouskous:3000/run";
+    let url = "http://kouskous:3006/run";
 
     let resp: CmdResponse = reqwest::Client::new()
         .post(url)

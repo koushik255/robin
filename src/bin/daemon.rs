@@ -16,7 +16,8 @@ async fn main() {
         .route("/run", post(run_command))
         .with_state(cwd);
 
-    let addr = "100.98.83.82:3000";
+    let addr = "100.98.83.82:3006";
+
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     println!("daemon listening on http://{addr}");
 
