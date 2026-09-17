@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::time::Instant;
 
 type SharedCwd = Arc<Mutex<PathBuf>>;
 
@@ -30,6 +31,10 @@ async fn run_command(
 ) -> Json<CmdResponse> {
     // std::process::Command is blocking, so run it off the async worker thread.
     //
+    //
+    // is thier a settings for automating improts for rustlsp?
+    let start = Instant::now();
+
     println!("{:?}", req);
     if req.command == "cd" {
         if req.args == [".."] {
@@ -53,6 +58,9 @@ async fn run_command(
     })
     .await
     .expect("spawn_blocking panicked");
+
+    let duration = start.elapsed();
+    println!("command took {}ms", duration.as_millis());
 
     let response = match output {
         Ok(out) => CmdResponse {

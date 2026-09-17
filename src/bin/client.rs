@@ -15,6 +15,7 @@ async fn main() {
     };
     let rest: Vec<String> = args.collect();
 
+    // ok i want to use maybe files now?
     // Point this at your server. Localhost for now.
     let url = "http://kouskous:3006/run";
 
