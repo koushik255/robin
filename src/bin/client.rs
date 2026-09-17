@@ -19,6 +19,8 @@ async fn main() {
     // Point this at your server. Localhost for now.
     let url = "http://kouskous:3006/run";
 
+    let start = std::time::Instant::now();
+
     let resp: CmdResponse = reqwest::Client::new()
         .post(url)
         .json(&CmdRequest {
@@ -31,6 +33,9 @@ async fn main() {
         .json()
         .await
         .expect("failed to parse daemon response");
+
+    let duration = start.elapsed();
+    println!("command took {}ms", duration.as_millis());
 
     // Mirror the remote output locally.
     print!("{}", resp.stdout);
