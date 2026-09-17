@@ -17,10 +17,11 @@ async fn main() {
 
     // ok i want to use maybe files now?
     // Point this at your server. Localhost for now.
-    let url = "http://kouskous:3006/run";
+    let url = "http://100.98.83.82:3006/run";
 
     let start = std::time::Instant::now();
 
+    //why this so slow??
     let resp: CmdResponse = reqwest::Client::new()
         .post(url)
         .json(&CmdRequest {
