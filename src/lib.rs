@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 // client -> daemon
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CmdRequest {
     pub command: String,
     pub args: Vec<String>,
