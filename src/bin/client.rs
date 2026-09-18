@@ -1,46 +1,42 @@
+use axum::{Json, Router, extract::Query, routing::get};
 use robin::{CmdRequest, CmdResponse};
-use std::process::exit;
+use serde::Deserialize;
 
-#[tokio::main]
-async fn main() {
-    // Everything after the binary name: e.g. `ls -la` → ["ls", "-la"]
-    let mut args = std::env::args().skip(1);
+// query string: /returned?command=ls&args=-la
+#[derive(Deserialize)]
+struct RunParams {
+    command: String,
+    #[serde(default)]
+    args: String,
+}
 
-    let command = match args.next() {
-        Some(c) => c,
-        None => {
-            eprintln!("usage: cargo run --bin client -- <command> [args...]");
-            exit(2);
-        }
-    };
-    let rest: Vec<String> = args.collect();
+async fn run(Query(params): Query<RunParams>) -> Json<CmdResponse> {
+    let args: Vec<String> = params.args.split_whitespace().map(String::from).collect();
 
-    // ok i want to use maybe files now?
-    // Point this at your server. Localhost for now.
-    let url = "http://100.98.83.82:3006/run";
-
-    let start = std::time::Instant::now();
-
-    //why this so slow??
     let resp: CmdResponse = reqwest::Client::new()
-        .post(url)
+        .post("http://100.98.83.82:3001/run") // the remote daemon on kouskous
         .json(&CmdRequest {
-            command,
-            args: rest,
+            command: params.command,
+            args,
         })
         .send()
         .await
-        .expect("request failed — is the daemon running?")
+        .expect("request to daemon failed — is it running?")
         .json()
         .await
-        .expect("failed to parse daemon response");
+        .expect("bad response from daemon");
 
-    let duration = start.elapsed();
-    println!("command took {}ms", duration.as_millis());
+    Json(resp)
+}
 
-    // Mirror the remote output locally.
-    print!("{}", resp.stdout);
-    eprint!("{}", resp.stderr);
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/returned", get(run));
 
-    exit(resp.exit_code.unwrap_or(1));
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:4000")
+        .await
+        .unwrap();
+    println!("local bridge listening on http://127.0.0.1:4000");
+
+    axum::serve(listener, app).await.unwrap();
 }
